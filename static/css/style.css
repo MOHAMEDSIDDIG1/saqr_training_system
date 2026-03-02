@@ -1,0 +1,286 @@
+/* تنسيقات إضافية للموقع */
+
+.video-container {
+    position: relative;
+    background: #000;
+    border-radius: 15px;
+    overflow: hidden;
+    margin: 1rem 0;
+}
+
+.video-container img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.status-indicator {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-left: 8px;
+    animation: pulse 2s infinite;
+}
+
+.status-active {
+    background-color: #28a745;
+    box-shadow: 0 0 10px rgba(40, 167, 69, 0.5);
+}
+
+.status-inactive {
+    background-color: #dc3545;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(40, 167, 69, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+    }
+}
+
+.tool-card {
+    transition: all 0.3s ease;
+}
+
+.tool-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
+
+.progress-bar-animated {
+    animation: progress-bar-stripes 1s linear infinite;
+}
+
+@keyframes progress-bar-stripes {
+    0% {
+        background-position: 1rem 0;
+    }
+    100% {
+        background-position: 0 0;
+    }
+}
+
+/* تنسيقات للشعار */
+.logo {
+    position: relative;
+    overflow: hidden;
+}
+
+.logo::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+    animation: shine 3s infinite;
+}
+
+@keyframes shine {
+    0% {
+        transform: translateX(-100%) translateY(-100%) rotate(45deg);
+    }
+    100% {
+        transform: translateX(100%) translateY(100%) rotate(45deg);
+    }
+}
+
+/* تنسيقات للتنبيهات */
+.alert {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+/* تنسيقات للأزرار */
+.btn {
+    border-radius: 25px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+/* تنسيقات للبطاقات */
+.card {
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.card-header {
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+/* تنسيقات للنماذج */
+.form-control, .form-select {
+    border-radius: 10px;
+    border: 2px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+/* تنسيقات للشريط التقدم */
+.progress {
+    height: 8px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.1);
+}
+
+.progress-bar {
+    border-radius: 10px;
+}
+
+/* تنسيقات للجداول */
+.table {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+/* تنسيقات للقوائم */
+.list-unstyled li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.list-unstyled li:last-child {
+    border-bottom: none;
+}
+
+/* تنسيقات للشعارات */
+.badge {
+    font-size: 0.8rem;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+}
+
+/* تنسيقات للخطوط العربية */
+.arabic-text {
+    font-family: 'Cairo', 'Tajawal', 'Amiri', sans-serif;
+    line-height: 1.8;
+}
+
+/* تنسيقات للصور */
+.img-fluid {
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+/* تنسيقات للفيديو */
+.video-placeholder {
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+    min-height: 300px;
+}
+
+/* تنسيقات للتنقل */
+.navbar {
+    backdrop-filter: blur(10px);
+    background: rgba(0,0,0,0.9) !important;
+}
+
+.navbar-brand {
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+
+/* تنسيقات للفوتر */
+.footer {
+    background: linear-gradient(135deg, rgba(0,0,0,0.9), rgba(0,0,0,0.7));
+    backdrop-filter: blur(10px);
+}
+
+/* تنسيقات متجاوبة */
+@media (max-width: 768px) {
+    .hero-section {
+        padding: 2rem 1rem;
+    }
+    
+    .tool-card {
+        margin-bottom: 1rem;
+    }
+    
+    .btn-lg {
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+    }
+}
+
+/* تنسيقات للرسوم المتحركة */
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.slide-in-left {
+    animation: slideInLeft 0.5s ease-out;
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.slide-in-right {
+    animation: slideInRight 0.5s ease-out;
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}

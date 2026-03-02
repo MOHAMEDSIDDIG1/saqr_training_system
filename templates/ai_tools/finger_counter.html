@@ -1,0 +1,482 @@
+{% extends 'ai_tools/base.html' %}
+
+{% block title %}عداد الأصابع{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4><i class="fas fa-hand-rock"></i> التعرف على عدد أصابع اليدين</h4>
+            </div>
+            <div class="card-body">
+                <div class="video-container">
+                    <img src="{% url 'ai_tools:camera_feed' %}" alt="كاميرا" class="img-fluid">
+                </div>
+                <div class="mt-3">
+                    <button id="startFingerCounter" class="btn btn-success btn-lg">
+                        <i class="fas fa-play"></i> بدء العد
+                    </button>
+                    <button id="stopFingerCounter" class="btn btn-danger btn-lg" style="display: none;">
+                        <i class="fas fa-stop"></i> إيقاف
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5><i class="fas fa-info-circle"></i> تعليمات الاستخدام</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li><i class="fas fa-check text-success"></i> ارفع يدك أمام الكاميرا</li>
+                    <li><i class="fas fa-check text-success"></i> ارفع الأصابع التي تريد عدها</li>
+                    <li><i class="fas fa-check text-success"></i> حافظ على اليد في إطار الكاميرا</li>
+                    <li><i class="fas fa-check text-success"></i> تأكد من الإضاءة الجيدة</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header bg-success text-white">
+                <h5><i class="fas fa-calculator"></i> العدد المُكتشف</h5>
+            </div>
+            <div class="card-body text-center">
+                <div id="fingerCount" style="font-size: 4rem; font-weight: bold; color: #28a745;">--</div>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header bg-warning text-white">
+                <h5><i class="fas fa-cog"></i> الحالة</h5>
+            </div>
+            <div class="card-body">
+                <p>الحالة: <span id="status" class="badge bg-secondary">غير نشط</span></p>
+                <p>اليد المكتشفة: <span id="handDetected">لا</span></p>
+                <p>الدقة: <span id="accuracy">--</span></p>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header bg-info text-white">
+                <h5><i class="fas fa-search"></i> اختبار اكتشاف اليد</h5>
+            </div>
+            <div class="card-body">
+                <button id="testHandDetection" class="btn btn-info btn-sm">
+                    <i class="fas fa-hand-paper"></i> اختبار اكتشاف اليد
+                </button>
+                <button id="checkFrameStatus" class="btn btn-secondary btn-sm mt-2">
+                    <i class="fas fa-video"></i> فحص حالة الإطار
+                </button>
+                <button id="forceStart" class="btn btn-warning btn-sm mt-2">
+                    <i class="fas fa-play-circle"></i> إجبار البدء
+                </button>
+                <button id="resetCompletely" class="btn btn-danger btn-sm mt-2">
+                    <i class="fas fa-redo"></i> إعادة تعيين كامل
+                </button>
+                <button id="diagnoseCamera" class="btn btn-info btn-sm mt-2">
+                    <i class="fas fa-camera"></i> تشخيص الكاميرا
+                </button>
+                <button id="testLandmarks" class="btn btn-success btn-sm mt-2">
+                    <i class="fas fa-hand-paper"></i> اختبار النقاط
+                </button>
+                <button id="forceResetStart" class="btn btn-dark btn-sm mt-2">
+                    <i class="fas fa-power-off"></i> إجبار إعادة التعيين والبدء
+                </button>
+                <div id="detectionResult" class="mt-2"></div>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header bg-warning text-white">
+                <h5><i class="fas fa-cog"></i> إعدادات الكشف</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-2">
+                    <label for="confidenceSlider" class="form-label">حساسية الكشف (0.1 - 1.0)</label>
+                    <input type="range" class="form-range" id="confidenceSlider" min="0.1" max="1.0" step="0.1" value="0.4">
+                    <span id="confidenceValue">0.4</span>
+                </div>
+                <div class="mb-2">
+                    <label for="complexitySlider" class="form-label">تعقيد النموذج (0 - 2)</label>
+                    <input type="range" class="form-range" id="complexitySlider" min="0" max="2" step="1" value="1">
+                    <span id="complexityValue">1</span>
+                </div>
+                <button id="applySettings" class="btn btn-warning btn-sm">
+                    <i class="fas fa-save"></i> تطبيق الإعدادات
+                </button>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header bg-danger text-white">
+                <h5><i class="fas fa-tools"></i> إعادة التعيين</h5>
+            </div>
+            <div class="card-body">
+                <button id="resetFingerCounter" class="btn btn-danger btn-sm">
+                    <i class="fas fa-redo"></i> إعادة تعيين الأداة
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    $('#startFingerCounter').click(function() {
+        $.post('{% url "ai_tools:finger_counter" %}', {
+            'action': 'start',
+            'csrfmiddlewaretoken': '{{ csrf_token }}'
+        }, function(data) {
+            if (data.status === 'success') {
+                $('#startFingerCounter').hide();
+                $('#stopFingerCounter').show();
+                $('#status').removeClass('bg-secondary').addClass('bg-success').text('نشط');
+                updateStats();
+            } else {
+                alert('خطأ: ' + data.message);
+            }
+        });
+    });
+    
+    $('#stopFingerCounter').click(function() {
+        $.post('{% url "ai_tools:finger_counter" %}', {
+            'action': 'stop',
+            'csrfmiddlewaretoken': '{{ csrf_token }}'
+        }, function(data) {
+            if (data.status === 'success') {
+                $('#startFingerCounter').show();
+                $('#stopFingerCounter').hide();
+                $('#status').removeClass('bg-success').addClass('bg-secondary').text('غير نشط');
+                $('#fingerCount').text('--');
+                $('#handDetected').text('لا');
+                $('#accuracy').text('--');
+            } else {
+                alert('خطأ: ' + data.message);
+            }
+        });
+    });
+    
+    function updateStats() {
+        // تحديث الإحصائيات
+        setInterval(function() {
+            if ($('#status').hasClass('bg-success')) {
+                // الحصول على عدد الأصابع
+                $.post('{% url "ai_tools:finger_counter" %}', {
+                    'action': 'get_count',
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                }, function(data) {
+                    if (data.status === 'success') {
+                        $('#fingerCount').text(data.count);
+                        $('#handDetected').text(data.count > 0 ? 'نعم' : 'لا');
+                    }
+                });
+                
+                // الحصول على الإحصائيات
+                $.post('{% url "ai_tools:finger_counter" %}', {
+                    'action': 'get_stats',
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                }, function(data) {
+                    if (data.fps) {
+                        $('#accuracy').text(data.fps + ' FPS');
+                    }
+                });
+            }
+        }, 1000);
+    }
+    
+    // اختصار ESC للإيقاف
+    $(document).keydown(function(e) {
+        if (e.keyCode === 27) { // ESC key
+            if ($('#stopFingerCounter').is(':visible')) {
+                $('#stopFingerCounter').click();
+            }
+        }
+    });
+    
+    // اختبار اكتشاف اليد
+    $('#testHandDetection').click(function() {
+        $.post('{% url "ai_tools:finger_counter" %}', {
+            'action': 'test_detection',
+            'csrfmiddlewaretoken': '{{ csrf_token }}'
+        }, function(data) {
+            let resultHtml = '';
+            if (data.status === 'success') {
+                resultHtml = `<div class="alert alert-success">
+                    <i class="fas fa-check"></i> ${data.message}
+                    <br><strong>عدد الأيدي المكتشفة:</strong> ${data.hands_detected}
+                </div>`;
+            } else if (data.status === 'warning') {
+                resultHtml = `<div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i> ${data.message}
+                    <br><strong>اقتراحات:</strong>
+                    <ul class="mb-0 mt-2">`;
+                data.suggestions.forEach(function(suggestion) {
+                    resultHtml += `<li>${suggestion}</li>`;
+                });
+                resultHtml += `</ul></div>`;
+            } else {
+                resultHtml = `<div class="alert alert-danger">
+                    <i class="fas fa-times"></i> ${data.message}
+                </div>`;
+            }
+            $('#detectionResult').html(resultHtml);
+        });
+    });
+    
+    // فحص حالة الإطار
+    $('#checkFrameStatus').click(function() {
+        $.post('{% url "ai_tools:finger_counter" %}', {
+            'action': 'check_frame',
+            'csrfmiddlewaretoken': '{{ csrf_token }}'
+        }, function(data) {
+            let resultHtml = '';
+            if (data.status === 'success') {
+                resultHtml = `<div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> <strong>حالة الإطار:</strong>
+                    <br><strong>الأداة نشطة:</strong> ${data.is_running ? 'نعم' : 'لا'}
+                    <br><strong>الإطار متاح:</strong> ${data.frame_available ? 'نعم' : 'لا'}
+                    <br><strong>حجم الإطار:</strong> ${data.frame_shape || 'غير متاح'}
+                    <br><strong>Thread نشط:</strong> ${data.thread_alive ? 'نعم' : 'لا'}
+                    <br><strong>MediaPipe مُهيأ:</strong> ${data.hands_initialized ? 'نعم' : 'لا'}
+                    <br><strong>عدد الأصابع:</strong> ${data.finger_count}
+                </div>`;
+            } else {
+                resultHtml = `<div class="alert alert-danger">
+                    <i class="fas fa-times"></i> ${data.message}
+                </div>`;
+            }
+            $('#detectionResult').html(resultHtml);
+        });
+    });
+    
+    // إجبار البدء
+    $('#forceStart').click(function() {
+        if (confirm('هل تريد إجبار بدء الأداة؟ سيتم إعادة تعيين الحالة بالكامل.')) {
+            $.post('{% url "ai_tools:finger_counter" %}', {
+                'action': 'force_start',
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            }, function(data) {
+                let resultHtml = '';
+                if (data.status === 'success') {
+                    resultHtml = `<div class="alert alert-success">
+                        <i class="fas fa-check"></i> ${data.message}
+                        <br><strong>تم إجبار بدء الأداة بنجاح!</strong>
+                    </div>`;
+                    
+                    // تحديث واجهة المستخدم
+                    $('#startFingerCounter').hide();
+                    $('#stopFingerCounter').show();
+                    $('#status').removeClass('bg-secondary').addClass('bg-success').text('نشط');
+                } else {
+                    resultHtml = `<div class="alert alert-danger">
+                        <i class="fas fa-times"></i> ${data.message}
+                    </div>`;
+                }
+                $('#detectionResult').html(resultHtml);
+            });
+        }
+    });
+    
+    // إعادة تعيين كامل
+    $('#resetCompletely').click(function() {
+        if (confirm('هل تريد إعادة تعيين الأداة بالكامل؟ سيتم إيقاف الأداة وإعادة تعيين جميع المتغيرات.')) {
+            $.post('{% url "ai_tools:finger_counter" %}', {
+                'action': 'reset_completely',
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            }, function(data) {
+                let resultHtml = '';
+                if (data.status === 'success') {
+                    resultHtml = `<div class="alert alert-success">
+                        <i class="fas fa-check"></i> ${data.message}
+                        <br><strong>تم إعادة تعيين الأداة بالكامل!</strong>
+                    </div>`;
+                    
+                    // تحديث واجهة المستخدم
+                    $('#startFingerCounter').show();
+                    $('#stopFingerCounter').hide();
+                    $('#status').removeClass('bg-success').addClass('bg-secondary').text('غير نشط');
+                    $('#fingerCount').text('--');
+                    $('#handDetected').text('لا');
+                    $('#accuracy').text('--');
+                } else {
+                    resultHtml = `<div class="alert alert-danger">
+                        <i class="fas fa-times"></i> ${data.message}
+                    </div>`;
+                }
+                $('#detectionResult').html(resultHtml);
+            });
+        }
+    });
+    
+    // تشخيص الكاميرا
+    $('#diagnoseCamera').click(function() {
+        $.post('{% url "ai_tools:finger_counter" %}', {
+            'action': 'diagnose_camera',
+            'csrfmiddlewaretoken': '{{ csrf_token }}'
+        }, function(data) {
+            let resultHtml = '';
+            if (data.status === 'success') {
+                const diagnosis = data.diagnosis;
+                let issuesHtml = '';
+                if (diagnosis.issues.length > 0) {
+                    issuesHtml = '<ul class="mb-2">';
+                    diagnosis.issues.forEach(function(issue) {
+                        issuesHtml += `<li class="text-danger">❌ ${issue}</li>`;
+                    });
+                    issuesHtml += '</ul>';
+                }
+                
+                let suggestionsHtml = '';
+                if (data.suggestions) {
+                    suggestionsHtml = '<strong>اقتراحات:</strong><ul class="mb-0">';
+                    data.suggestions.forEach(function(suggestion) {
+                        suggestionsHtml += `<li>💡 ${suggestion}</li>`;
+                    });
+                    suggestionsHtml += '</ul>';
+                }
+                
+                resultHtml = `<div class="alert alert-info">
+                    <i class="fas fa-camera"></i> <strong>تشخيص الكاميرا:</strong>
+                    <br><strong>الأداة نشطة:</strong> ${diagnosis.is_running ? 'نعم' : 'لا'}
+                    <br><strong>Thread نشط:</strong> ${diagnosis.thread_alive ? 'نعم' : 'لا'}
+                    <br><strong>MediaPipe مُهيأ:</strong> ${diagnosis.hands_initialized ? 'نعم' : 'لا'}
+                    <br><strong>الإطار متاح:</strong> ${diagnosis.frame_available ? 'نعم' : 'لا'}
+                    <br><strong>حجم الإطار:</strong> ${diagnosis.frame_shape || 'غير متاح'}
+                    ${issuesHtml}
+                    ${suggestionsHtml}
+                </div>`;
+            } else {
+                resultHtml = `<div class="alert alert-danger">
+                    <i class="fas fa-times"></i> ${data.message}
+                </div>`;
+            }
+            $('#detectionResult').html(resultHtml);
+        });
+    });
+    
+    // اختبار النقاط
+    $('#testLandmarks').click(function() {
+        $.post('{% url "ai_tools:finger_counter" %}', {
+            'action': 'test_landmarks',
+            'csrfmiddlewaretoken': '{{ csrf_token }}'
+        }, function(data) {
+            let resultHtml = '';
+            if (data.status === 'success') {
+                resultHtml = `<div class="alert alert-success">
+                    <i class="fas fa-check"></i> ${data.message}
+                    <br><strong>عدد الأيدي المكتشفة:</strong> ${data.hands_detected}
+                    <br><strong>النقاط متاحة:</strong> ${data.landmarks_available ? 'نعم' : 'لا'}
+                    <br><strong>✅ النقاط يجب أن تظهر على الكاميرا!</strong>
+                </div>`;
+            } else if (data.status === 'warning') {
+                let suggestionsHtml = '';
+                if (data.suggestions) {
+                    suggestionsHtml = '<strong>اقتراحات:</strong><ul class="mb-0">';
+                    data.suggestions.forEach(function(suggestion) {
+                        suggestionsHtml += `<li>💡 ${suggestion}</li>`;
+                    });
+                    suggestionsHtml += '</ul>';
+                }
+                
+                resultHtml = `<div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i> ${data.message}
+                    <br><strong>عدد الأيدي المكتشفة:</strong> ${data.hands_detected}
+                    <br><strong>النقاط متاحة:</strong> ${data.landmarks_available ? 'نعم' : 'لا'}
+                    ${suggestionsHtml}
+                </div>`;
+            } else {
+                resultHtml = `<div class="alert alert-danger">
+                    <i class="fas fa-times"></i> ${data.message}
+                </div>`;
+            }
+            $('#detectionResult').html(resultHtml);
+        });
+    });
+    
+    // إجبار إعادة التعيين والبدء
+    $('#forceResetStart').click(function() {
+        if (confirm('هل تريد إجبار إعادة تعيين وبدء الأداة؟ سيتم إيقاف الأداة بقوة وإعادة تشغيلها حتى لو كانت تعمل.')) {
+            $.post('{% url "ai_tools:finger_counter" %}', {
+                'action': 'force_reset_start',
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            }, function(data) {
+                let resultHtml = '';
+                if (data.status === 'success') {
+                    resultHtml = `<div class="alert alert-success">
+                        <i class="fas fa-check"></i> ${data.message}
+                        <br><strong>تم إجبار إعادة التعيين والبدء بنجاح!</strong>
+                        <br><strong>✅ الأداة تعمل الآن!</strong>
+                    </div>`;
+                    
+                    // تحديث واجهة المستخدم
+                    $('#startFingerCounter').hide();
+                    $('#stopFingerCounter').show();
+                    $('#status').removeClass('bg-secondary').addClass('bg-success').text('نشط');
+                } else {
+                    resultHtml = `<div class="alert alert-danger">
+                        <i class="fas fa-times"></i> ${data.message}
+                    </div>`;
+                }
+                $('#detectionResult').html(resultHtml);
+            });
+        }
+    });
+    
+    // تحديث قيم الإعدادات
+    $('#confidenceSlider').on('input', function() {
+        $('#confidenceValue').text($(this).val());
+    });
+    
+    $('#complexitySlider').on('input', function() {
+        $('#complexityValue').text($(this).val());
+    });
+    
+    // تطبيق الإعدادات
+    $('#applySettings').click(function() {
+        const confidence = $('#confidenceSlider').val();
+        const complexity = $('#complexitySlider').val();
+        
+        $.post('{% url "ai_tools:finger_counter" %}', {
+            'action': 'adjust_settings',
+            'confidence': confidence,
+            'complexity': complexity,
+            'csrfmiddlewaretoken': '{{ csrf_token }}'
+        }, function(data) {
+            if (data.status === 'success') {
+                alert('تم تطبيق الإعدادات بنجاح');
+            } else {
+                alert('خطأ: ' + data.message);
+            }
+        });
+    });
+    
+    // إعادة تعيين الأداة
+    $('#resetFingerCounter').click(function() {
+        if (confirm('هل تريد إعادة تعيين الأداة؟ سيتم إيقاف الأداة وإعادة تعيين جميع الإعدادات.')) {
+            $.post('{% url "ai_tools:finger_counter" %}', {
+                'action': 'reset',
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            }, function(data) {
+                if (data.status === 'success') {
+                    $('#startFingerCounter').show();
+                    $('#stopFingerCounter').hide();
+                    $('#status').removeClass('bg-success').addClass('bg-secondary').text('غير نشط');
+                    $('#fingerCount').text('--');
+                    $('#handDetected').text('لا');
+                    $('#accuracy').text('--');
+                    alert('تم إعادة تعيين الأداة بنجاح');
+                } else {
+                    alert('خطأ: ' + data.message);
+                }
+            });
+        }
+    });
+});
+</script>
+{% endblock %}

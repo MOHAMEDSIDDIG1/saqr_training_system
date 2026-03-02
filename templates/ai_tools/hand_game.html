@@ -1,0 +1,65 @@
+{% extends 'ai_tools/base.html' %}
+
+{% block title %}لعبة اليدين{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4><i class="fas fa-gamepad"></i> لعبة الكرات المتساقطة</h4>
+            </div>
+            <div class="card-body">
+                <div class="video-container">
+                    <img src="{% url 'ai_tools:camera_feed' %}" alt="كاميرا" class="img-fluid">
+                </div>
+                <div class="mt-3">
+                    <button id="startHandGame" class="btn btn-success btn-lg">
+                        <i class="fas fa-play"></i> بدء اللعبة
+                    </button>
+                    <button id="stopHandGame" class="btn btn-danger btn-lg" style="display: none;">
+                        <i class="fas fa-stop"></i> إيقاف
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5><i class="fas fa-info-circle"></i> تعليمات اللعبة</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li><i class="fas fa-check text-success"></i> ارفع إصبع السبابة للتحكم</li>
+                    <li><i class="fas fa-check text-success"></i> المس الكرات المتساقطة</li>
+                    <li><i class="fas fa-check text-success"></i> كل كرة تمسها تحصل على نقطة</li>
+                    <li><i class="fas fa-check text-success"></i> حافظ على اليد في إطار الكاميرا</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header bg-success text-white">
+                <h5><i class="fas fa-trophy"></i> النتيجة</h5>
+            </div>
+            <div class="card-body text-center">
+                <div id="gameScore" style="font-size: 3rem; font-weight: bold; color: #28a745;">0</div>
+                <p class="mt-2">نقطة</p>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header bg-warning text-white">
+                <h5><i class="fas fa-cog"></i> الحالة</h5>
+            </div>
+            <div class="card-body">
+                <p>الحالة: <span id="status" class="badge bg-secondary">غير نشط</span></p>
+                <p>الوقت: <span id="gameTime">0 ثانية</span></p>
+                <p>الكرات: <span id="ballCount">0</span></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
