@@ -1,0 +1,16 @@
+Django
+opencv-python
+mediapipe
+pyautogui
+numpy
+speechrecognition
+pyttsx3
+qrcode[pil]
+Pillow
+pycaw
+comtypes
+arabic-reshaper
+python-bidi
+pyperclip
+autopy
+# winsound - مدمج في Python
